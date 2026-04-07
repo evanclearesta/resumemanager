@@ -116,35 +116,33 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
     }
   }, [instance.loading, instance.url, handlePendingLoad]);
 
-  if (!displayUrlRef.current && (instance.loading || !instance.url)) {
-    return (
-      <div ref={containerRef} className="relative flex flex-1 items-center justify-center overflow-hidden bg-gray-100">
+  const isLoading = !displayUrlRef.current && (instance.loading || !instance.url);
+
+  return (
+    <div ref={containerRef} className="relative flex flex-1 items-center justify-center overflow-hidden bg-gray-100">
+      {isLoading ? (
         <div
           className="h-[842px] w-[595px] animate-pulse rounded bg-gray-200"
           style={{ transform: `scale(${scale})` }}
         />
-      </div>
-    );
-  }
+      ) : (
+        <>
+          {progress > 0 && (
+            <div className="absolute top-0 left-0 right-0 z-10 h-[3px]">
+              <div
+                className="h-full bg-blue-500"
+                style={{
+                  width: `${progress}%`,
+                  opacity: progress >= 100 ? 0 : 1,
+                  transition: progress >= 100
+                    ? "width 150ms ease-out, opacity 300ms ease-out"
+                    : "width 100ms linear",
+                }}
+              />
+            </div>
+          )}
 
-  return (
-    <div ref={containerRef} className="relative flex flex-1 items-center justify-center overflow-hidden bg-gray-100">
-      {progress > 0 && (
-        <div className="absolute top-0 left-0 right-0 z-10 h-[3px]">
-          <div
-            className="h-full bg-blue-500"
-            style={{
-              width: `${progress}%`,
-              opacity: progress >= 100 ? 0 : 1,
-              transition: progress >= 100
-                ? "width 150ms ease-out, opacity 300ms ease-out"
-                : "width 100ms linear",
-            }}
-          />
-        </div>
-      )}
-
-      <div className="relative h-[842px] w-[595px]" style={{ transform: `scale(${scale})` }}>
+          <div className="relative h-[842px] w-[595px]" style={{ transform: `scale(${scale})` }}>
         <iframe
           ref={iframeARef}
           width="100%"
@@ -168,6 +166,8 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
           }}
         />
       </div>
+        </>
+      )}
     </div>
   );
 }
