@@ -14,6 +14,16 @@ import { BranchResumeRow } from "./branch-resume-row";
 import { CoverLetterRow } from "./cover-letter-row";
 import type { BranchStatus } from "@/lib/types";
 import type { Id, Doc } from "../../../convex/_generated/dataModel";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function ResumeTable() {
   const router = useRouter();
@@ -29,6 +39,7 @@ export function ResumeTable() {
   const [branchModalBaseId, setBranchModalBaseId] = useState<Id<"baseResumes"> | null>(null);
   const [addContentBranchId, setAddContentBranchId] = useState<Id<"branchResumes"> | null>(null);
   const [editCoverLetterId, setEditCoverLetterId] = useState<Id<"coverLetters"> | null>(null);
+  const [deleteAction, setDeleteAction] = useState<{ type: string; id: string; name: string } | null>(null);
 
   // Loading state
   if (baseResumes === undefined) {
@@ -97,14 +108,14 @@ export function ResumeTable() {
                       coverLetters={coverLetterList}
                       onEditResume={() => router.push(`/resume/${resume._id}`)}
                       onDuplicateResume={() => setBranchModalBaseId(resume._id)}
-                      onDeleteResume={() => deleteBase({ id: resume._id })}
+                      onDeleteResume={() => setDeleteAction({ type: "base resume", id: resume._id, name: resume.title })}
                       onEditBranch={(id: Id<"branchResumes">) => router.push(`/resume/${id}`)}
                       onDuplicateBranch={(baseId: Id<"baseResumes">) => setBranchModalBaseId(baseId)}
-                      onDeleteBranch={(id: Id<"branchResumes">) => deleteBranch({ id })}
+                      onDeleteBranch={(id) => setDeleteAction({ type: "branch", id, name: "this branch" })}
                       onStatusChange={(id: Id<"branchResumes">, status: string) => updateBranchStatus({ id, status })}
                       onAddContent={(id: Id<"branchResumes">) => setAddContentBranchId(id)}
                       onEditCoverLetter={(id: Id<"coverLetters">) => setEditCoverLetterId(id)}
-                      onDeleteCoverLetter={(id: Id<"coverLetters">) => deleteCoverLetter({ id })}
+                      onDeleteCoverLetter={(id) => setDeleteAction({ type: "cover letter", id, name: "this cover letter" })}
                     />
                   );
                 })}
@@ -133,6 +144,34 @@ export function ResumeTable() {
         onOpenChange={(open) => !open && setEditCoverLetterId(null)}
         coverLetterId={editCoverLetterId}
       />
+
+      <AlertDialog open={deleteAction !== null} onOpenChange={(open) => !open && setDeleteAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {deleteAction?.type}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete &quot;{deleteAction?.name}&quot;
+              {deleteAction?.type === "base resume" && " and all its branches and cover letters"}.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                if (!deleteAction) return;
+                if (deleteAction.type === "base resume") deleteBase({ id: deleteAction.id as any });
+                else if (deleteAction.type === "branch") deleteBranch({ id: deleteAction.id as any });
+                else if (deleteAction.type === "cover letter") deleteCoverLetter({ id: deleteAction.id as any });
+                setDeleteAction(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
