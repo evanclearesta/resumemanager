@@ -5,7 +5,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Folder } from "lucide-react";
+import { ResumeCard } from "./resume-card";
 import { BranchModal } from "./branch-modal";
 import { AddContentModal } from "./add-content-modal";
 import { CoverLetterEditorModal } from "./cover-letter-editor-modal";
@@ -74,7 +75,47 @@ export function ResumeTable() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
+      {/* Card layout for narrow viewports */}
+      <div className="flex flex-col gap-3 md:hidden">
+        {[...categories.entries()].map(([category, resumes]) => (
+          <div key={category}>
+            <div className="mb-2 flex items-center gap-2 px-1">
+              <Folder className="h-4 w-4 text-blue-600" />
+              <span className="text-[13px] font-semibold text-zinc-900">{category}</span>
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600">
+                {resumes.length}
+              </span>
+            </div>
+            {resumes.map((resume) => {
+              const resumeBranches = branchList.filter((b) => b.baseResumeId === resume._id);
+              const resumeCLs = coverLetterList.filter((cl) =>
+                resumeBranches.some((b) => b._id === cl.branchResumeId)
+              );
+              return (
+                <ResumeCard
+                  key={resume._id}
+                  resume={resume}
+                  branches={resumeBranches}
+                  coverLetters={resumeCLs}
+                  onEditResume={() => router.push(`/resume/${resume._id}`)}
+                  onDuplicateResume={() => setBranchModalBaseId(resume._id)}
+                  onDeleteResume={() => setDeleteAction({ type: "base resume", id: resume._id, name: resume.title })}
+                  onEditBranch={(id) => router.push(`/resume/${id}`)}
+                  onDuplicateBranch={() => setBranchModalBaseId(resume._id)}
+                  onDeleteBranch={(id) => setDeleteAction({ type: "branch", id, name: "this branch" })}
+                  onStatusChange={(id, status) => updateBranchStatus({ id, status })}
+                  onAddContent={(id) => setAddContentBranchId(id)}
+                  onEditCoverLetter={(id) => setEditCoverLetterId(id)}
+                  onDeleteCoverLetter={(id) => setDeleteAction({ type: "cover letter", id, name: "this cover letter" })}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden md:block">
       <div className="overflow-hidden rounded-lg border bg-white">
         <table className="w-full table-fixed">
           <colgroup>
@@ -131,6 +172,7 @@ export function ResumeTable() {
             ))}
           </tbody>
         </table>
+      </div>
       </div>
 
       <BranchModal
