@@ -14,11 +14,13 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
   const [instance, update] = usePDF();
   const iframeARef = useRef<HTMLIFrameElement>(null);
   const iframeBRef = useRef<HTMLIFrameElement>(null);
-  const activeIframeRef = useRef<"A" | "B">("A");
+  // State drives re-renders for crossfade; ref gives synchronous reads in effects
+  const [activeIframe, setActiveIframe] = useState<"A" | "B">("A");
+  const activeIframeForEffectRef = useRef<"A" | "B">("A");
   const firstLoadDoneRef = useRef(false);
   const displayUrlRef = useRef<string | null>(null);
+  const swapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [isRegenerating, setIsRegenerating] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const doc = <ResumePDFDocument content={content} layout={layoutSettings} />;
@@ -28,7 +30,6 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
   useEffect(() => {
     if (!instance.loading || !firstLoadDoneRef.current) return;
 
-    setIsRegenerating(true);
     setProgress(0);
 
     let animationId: number;
@@ -47,12 +48,23 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
   }, [instance.loading]);
 
   const handlePendingLoad = useCallback(() => {
-    activeIframeRef.current = activeIframeRef.current === "A" ? "B" : "A";
+    const next = activeIframeForEffectRef.current === "A" ? "B" : "A";
+    activeIframeForEffectRef.current = next;
+    setActiveIframe(next);
     setProgress(100);
-    setTimeout(() => {
-      setIsRegenerating(false);
+    swapTimeoutRef.current = setTimeout(() => {
       setProgress(0);
+      swapTimeoutRef.current = null;
     }, 300);
+  }, []);
+
+  // Clear swap timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (swapTimeoutRef.current !== null) {
+        clearTimeout(swapTimeoutRef.current);
+      }
+    };
   }, []);
 
   // Load new PDF into the pending (hidden) iframe; swap on load
@@ -68,11 +80,17 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
         return;
       }
 
-      const pendingRef = activeIframeRef.current === "A" ? iframeBRef : iframeARef;
+      const pendingRef = activeIframeForEffectRef.current === "A" ? iframeBRef : iframeARef;
       if (pendingRef.current) {
         pendingRef.current.onload = handlePendingLoad;
         pendingRef.current.src = `${instance.url}#toolbar=0`;
       }
+
+      return () => {
+        if (pendingRef.current) {
+          pendingRef.current.onload = null;
+        }
+      };
     }
   }, [instance.loading, instance.url, handlePendingLoad]);
 
@@ -86,10 +104,10 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
 
   return (
     <div className="relative flex flex-1 items-center justify-center overflow-auto bg-gray-100 p-10">
-      {isRegenerating && (
+      {progress > 0 && (
         <div className="absolute top-0 left-0 right-0 z-10 h-[3px]">
           <div
-            className="h-full bg-blue-500 transition-all duration-300 ease-out"
+            className="h-full bg-blue-500"
             style={{
               width: `${progress}%`,
               opacity: progress >= 100 ? 0 : 1,
@@ -109,8 +127,8 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
           className="absolute inset-0 rounded shadow-lg transition-opacity duration-150"
           style={{
             border: "none",
-            opacity: activeIframeRef.current === "A" ? 1 : 0,
-            zIndex: activeIframeRef.current === "A" ? 1 : 0,
+            opacity: activeIframe === "A" ? 1 : 0,
+            zIndex: activeIframe === "A" ? 1 : 0,
           }}
         />
         <iframe
@@ -120,8 +138,8 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
           className="absolute inset-0 rounded shadow-lg transition-opacity duration-150"
           style={{
             border: "none",
-            opacity: activeIframeRef.current === "B" ? 1 : 0,
-            zIndex: activeIframeRef.current === "B" ? 1 : 0,
+            opacity: activeIframe === "B" ? 1 : 0,
+            zIndex: activeIframe === "B" ? 1 : 0,
           }}
         />
       </div>
