@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
@@ -75,22 +76,29 @@ export function ResumeTable() {
   return (
     <div className="p-8">
       <div className="overflow-hidden rounded-lg border bg-white">
-        <table className="w-full">
+        <table className="w-full table-fixed">
+          <colgroup>
+            <col className="w-[40%] min-w-[200px]" />
+            <col className="hidden w-[140px] min-w-[100px] lg:table-column" />
+            <col className="w-[120px] min-w-[100px]" />
+            <col className="hidden min-w-[120px] lg:table-column" />
+            <col className="w-[160px] min-w-[120px]" />
+          </colgroup>
           <thead>
-            <tr className="bg-gray-50">
-              <th className="px-2 py-3 text-left text-xs font-medium uppercase text-gray-500" style={{ width: 340 }}>
+            <tr className="h-11 bg-gray-50">
+              <th className="px-5 py-3 text-left text-xs font-semibold uppercase text-zinc-500">
                 Resume Name
               </th>
-              <th className="px-2 py-3 text-left text-xs font-medium uppercase text-gray-500" style={{ width: 140 }}>
+              <th className="hidden px-5 py-3 text-left text-xs font-semibold uppercase text-zinc-500 lg:table-cell">
                 Target
               </th>
-              <th className="px-2 py-3 text-left text-xs font-medium uppercase text-gray-500" style={{ width: 120 }}>
+              <th className="px-5 py-3 text-left text-xs font-semibold uppercase text-zinc-500">
                 Status
               </th>
-              <th className="px-2 py-3 text-left text-xs font-medium uppercase text-gray-500">
+              <th className="hidden px-5 py-3 text-left text-xs font-semibold uppercase text-zinc-500 lg:table-cell">
                 Last Edited
               </th>
-              <th className="px-2 py-3 text-right text-xs font-medium uppercase text-gray-500" style={{ width: 160 }}>
+              <th className="px-5 py-3 text-right text-xs font-semibold uppercase text-zinc-500">
                 Actions
               </th>
             </tr>
@@ -216,7 +224,7 @@ function ResumeWithBranches({
       {branches.map((branch) => {
         const branchCoverLetters = coverLetters.filter((cl) => cl.branchResumeId === branch._id);
         return (
-          <span key={branch._id}>
+          <React.Fragment key={branch._id}>
             <BranchResumeRow
               branch={branch}
               onEdit={() => onEditBranch(branch._id)}
@@ -233,7 +241,7 @@ function ResumeWithBranches({
                 onDelete={() => onDeleteCoverLetter(cl._id)}
               />
             ))}
-          </span>
+          </React.Fragment>
         );
       })}
     </>
