@@ -13,20 +13,21 @@ interface SidebarProps {
   onContentChange: (content: ResumeContent) => void;
   onLayoutChange: (layout: LayoutSettings) => void;
   onCategoryChange: (category: string) => void;
+  onBlur: () => void;
 }
 
-export function Sidebar({ content, layoutSettings, category, categoryOptions, onContentChange, onLayoutChange, onCategoryChange }: SidebarProps) {
+export function Sidebar({ content, layoutSettings, category, categoryOptions, onContentChange, onLayoutChange, onCategoryChange, onBlur }: SidebarProps) {
   return (
-    <div className="flex w-[400px] flex-col border-r bg-white">
-      <Tabs defaultValue="editor" className="flex flex-1 flex-col">
-        <TabsList className="mx-4 mt-3">
+    <div className="flex w-[400px] max-w-[calc(100vw-48px)] flex-col overflow-hidden border-r bg-white" onBlur={onBlur}>
+      <Tabs defaultValue="editor" className="flex min-h-0 flex-1 flex-col">
+        <TabsList className="mx-4 mt-3 shrink-0">
           <TabsTrigger value="editor">Editor</TabsTrigger>
           <TabsTrigger value="layout">Layout & Style</TabsTrigger>
         </TabsList>
-        <TabsContent value="editor" className="flex-1 overflow-y-auto">
+        <TabsContent value="editor" className="min-h-0 flex-1 overflow-y-auto">
           <EditorTab content={content} category={category} onChange={onContentChange} onCategoryChange={onCategoryChange} categoryOptions={categoryOptions} />
         </TabsContent>
-        <TabsContent value="layout" className="flex-1 overflow-y-auto">
+        <TabsContent value="layout" className="min-h-0 flex-1 overflow-y-auto">
           <LayoutStyleTab layout={layoutSettings} onChange={onLayoutChange} />
         </TabsContent>
       </Tabs>
