@@ -20,11 +20,33 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
   const firstLoadDoneRef = useRef(false);
   const displayUrlRef = useRef<string | null>(null);
   const swapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
 
   const [progress, setProgress] = useState(0);
 
   const doc = <ResumePDFDocument content={content} layout={layoutSettings} />;
   useEffect(() => update(doc), [content, layoutSettings]);
+
+  // Responsive scaling to fit A4 page within available space
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      // 40px padding on each side = 80px total
+      const availableWidth = width - 80;
+      const availableHeight = height - 80;
+      const scaleX = availableWidth / 595;
+      const scaleY = availableHeight / 842;
+      const newScale = Math.min(scaleX, scaleY, 1); // never exceed 1
+      setScale(Math.max(newScale, 0.3)); // minimum 30%
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   // Start progress bar animation when PDF is regenerating
   useEffect(() => {
@@ -96,14 +118,17 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
 
   if (!displayUrlRef.current && (instance.loading || !instance.url)) {
     return (
-      <div className="relative flex flex-1 items-center justify-center overflow-auto bg-gray-100 p-10">
-        <div className="h-[842px] w-[595px] animate-pulse rounded bg-gray-200" />
+      <div ref={containerRef} className="relative flex flex-1 items-center justify-center overflow-hidden bg-gray-100">
+        <div
+          className="h-[842px] w-[595px] animate-pulse rounded bg-gray-200"
+          style={{ transform: `scale(${scale})` }}
+        />
       </div>
     );
   }
 
   return (
-    <div className="relative flex flex-1 items-center justify-center overflow-auto bg-gray-100 p-10">
+    <div ref={containerRef} className="relative flex flex-1 items-center justify-center overflow-hidden bg-gray-100">
       {progress > 0 && (
         <div className="absolute top-0 left-0 right-0 z-10 h-[3px]">
           <div
@@ -119,7 +144,7 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
         </div>
       )}
 
-      <div className="relative h-[842px] w-[595px]">
+      <div className="relative h-[842px] w-[595px]" style={{ transform: `scale(${scale})` }}>
         <iframe
           ref={iframeARef}
           width="100%"
