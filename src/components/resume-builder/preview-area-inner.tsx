@@ -2,8 +2,15 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { usePDF } from "@react-pdf/renderer";
+import { Minus, Plus, RotateCcw } from "lucide-react";
 import type { ResumeContent, LayoutSettings } from "@/lib/types";
 import { ResumePDFDocument } from "./resume-pdf-document";
+
+const PAGE_WIDTH = 595;
+const PAGE_HEIGHT = 842;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 1.5;
+const ZOOM_STEP = 0.25;
 
 interface PreviewAreaInnerProps {
   content: ResumeContent;
@@ -14,7 +21,6 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
   const [instance, update] = usePDF();
   const iframeARef = useRef<HTMLIFrameElement>(null);
   const iframeBRef = useRef<HTMLIFrameElement>(null);
-  // State drives re-renders for crossfade; ref gives synchronous reads in effects
   const [activeIframe, setActiveIframe] = useState<"A" | "B">("A");
   const activeIframeForEffectRef = useRef<"A" | "B">("A");
   const firstLoadDoneRef = useRef(false);
@@ -22,6 +28,11 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
   const swapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [progress, setProgress] = useState(0);
+  const [zoom, setZoom] = useState(1);
+
+  const zoomIn = useCallback(() => setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM)), []);
+  const zoomOut = useCallback(() => setZoom((z) => Math.max(z - ZOOM_STEP, MIN_ZOOM)), []);
+  const zoomReset = useCallback(() => setZoom(1), []);
 
   const doc = <ResumePDFDocument content={content} layout={layoutSettings} />;
   useEffect(() => update(doc), [content, layoutSettings]);
@@ -96,16 +107,19 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
 
   if (!displayUrlRef.current && (instance.loading || !instance.url)) {
     return (
-      <div className="relative flex flex-1 items-center justify-center overflow-auto bg-gray-100 p-10">
-        <div className="h-[842px] w-[595px] animate-pulse rounded bg-gray-200" />
+      <div className="relative flex-1 overflow-auto bg-gray-100">
+        <div className="mx-auto py-10" style={{ width: PAGE_WIDTH, height: PAGE_HEIGHT }}>
+          <div className="h-full w-full animate-pulse rounded bg-gray-200" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="relative flex flex-1 items-center justify-center overflow-auto bg-gray-100 p-10">
+    <div className="relative flex-1 overflow-auto bg-gray-100">
+      {/* Progress bar */}
       {progress > 0 && (
-        <div className="absolute top-0 left-0 right-0 z-10 h-[3px]">
+        <div className="sticky top-0 left-0 right-0 z-10 h-[3px]">
           <div
             className="h-full bg-blue-500"
             style={{
@@ -119,29 +133,72 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
         </div>
       )}
 
-      <div className="relative h-[842px] w-[595px]">
-        <iframe
-          ref={iframeARef}
-          width="100%"
-          height="100%"
-          className="absolute inset-0 rounded shadow-lg transition-opacity duration-150"
+      {/* Zoom toolbar */}
+      <div className="sticky top-3 right-3 z-20 ml-auto mr-3 flex w-fit items-center gap-1 rounded-lg border bg-white px-2 py-1 shadow-sm">
+        <button
+          onClick={zoomOut}
+          disabled={zoom <= MIN_ZOOM}
+          className="rounded p-1 text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
+        >
+          <Minus className="h-3.5 w-3.5" />
+        </button>
+        <span className="min-w-[3ch] text-center text-xs text-gray-600">
+          {Math.round(zoom * 100)}%
+        </span>
+        <button
+          onClick={zoomIn}
+          disabled={zoom >= MAX_ZOOM}
+          className="rounded p-1 text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
+        <div className="mx-0.5 h-4 w-px bg-gray-200" />
+        <button
+          onClick={zoomReset}
+          disabled={zoom === 1}
+          className="rounded p-1 text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      {/* PDF page — scaled wrapper for correct scroll size */}
+      <div
+        className="mx-auto py-10"
+        style={{ width: PAGE_WIDTH * zoom, height: PAGE_HEIGHT * zoom }}
+      >
+        <div
+          className="relative"
           style={{
-            border: "none",
-            opacity: activeIframe === "A" ? 1 : 0,
-            zIndex: activeIframe === "A" ? 1 : 0,
+            width: PAGE_WIDTH,
+            height: PAGE_HEIGHT,
+            transform: `scale(${zoom})`,
+            transformOrigin: "top left",
           }}
-        />
-        <iframe
-          ref={iframeBRef}
-          width="100%"
-          height="100%"
-          className="absolute inset-0 rounded shadow-lg transition-opacity duration-150"
-          style={{
-            border: "none",
-            opacity: activeIframe === "B" ? 1 : 0,
-            zIndex: activeIframe === "B" ? 1 : 0,
-          }}
-        />
+        >
+          <iframe
+            ref={iframeARef}
+            width="100%"
+            height="100%"
+            className="absolute inset-0 rounded shadow-lg transition-opacity duration-150"
+            style={{
+              border: "none",
+              opacity: activeIframe === "A" ? 1 : 0,
+              zIndex: activeIframe === "A" ? 1 : 0,
+            }}
+          />
+          <iframe
+            ref={iframeBRef}
+            width="100%"
+            height="100%"
+            className="absolute inset-0 rounded shadow-lg transition-opacity duration-150"
+            style={{
+              border: "none",
+              opacity: activeIframe === "B" ? 1 : 0,
+              zIndex: activeIframe === "B" ? 1 : 0,
+            }}
+          />
+        </div>
       </div>
     </div>
   );
