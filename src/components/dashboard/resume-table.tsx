@@ -5,6 +5,9 @@ import { api } from "../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FileText } from "lucide-react";
+import { BranchModal } from "./branch-modal";
+import { AddContentModal } from "./add-content-modal";
+import { CoverLetterEditorModal } from "./cover-letter-editor-modal";
 import { CategoryGroup } from "./category-group";
 import { BaseResumeRow } from "./base-resume-row";
 import { BranchResumeRow } from "./branch-resume-row";
@@ -111,10 +114,25 @@ export function ResumeTable() {
         </table>
       </div>
 
-      {/* Modals will be added in Task 6 */}
-      {/* <BranchModal open={branchModalBaseId !== null} onOpenChange={...} /> */}
-      {/* <AddContentModal open={addContentBranchId !== null} onOpenChange={...} /> */}
-      {/* <CoverLetterEditorModal open={editCoverLetterId !== null} onOpenChange={...} /> */}
+      <BranchModal
+        open={branchModalBaseId !== null}
+        onOpenChange={(open) => !open && setBranchModalBaseId(null)}
+        baseResumeId={branchModalBaseId}
+        baseResumes={baseResumes}
+      />
+
+      <AddContentModal
+        open={addContentBranchId !== null}
+        onOpenChange={(open) => !open && setAddContentBranchId(null)}
+        branchResumeId={addContentBranchId}
+        onCoverLetterCreated={(id) => setEditCoverLetterId(id)}
+      />
+
+      <CoverLetterEditorModal
+        open={editCoverLetterId !== null}
+        onOpenChange={(open) => !open && setEditCoverLetterId(null)}
+        coverLetterId={editCoverLetterId}
+      />
     </div>
   );
 }
