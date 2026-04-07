@@ -34,7 +34,7 @@ export function CoverLetterEditorModal({
   );
 
   const updateCoverLetter = useMutation(api.coverLetters.update);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const editor = useEditor({
     extensions: [StarterKit, Underline],

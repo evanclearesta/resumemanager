@@ -76,7 +76,7 @@ export function BranchModal({ open, onOpenChange, baseResumeId, baseResumes }: B
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Parent Resume</Label>
-            <Select value={effectiveBaseId as string} onValueChange={setSelectedBaseId}>
+            <Select value={effectiveBaseId as string} onValueChange={(v) => v && setSelectedBaseId(v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a base resume..." />
               </SelectTrigger>

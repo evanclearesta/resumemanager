@@ -44,7 +44,7 @@ export function ResumeBuilder() {
   const [title, setTitle] = useState("");
   const hasCreated = useRef(false);
   const createdId = useRef<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     if (resume) {

@@ -71,7 +71,7 @@ export function LayoutStyleTab({ layout, onChange }: LayoutStyleTabProps) {
           {(["title", "heading", "body"] as const).map((field) => (
             <div key={field} className="space-y-1.5">
               <Label className="text-xs capitalize">{field}</Label>
-              <Select value={layout.fonts[field]} onValueChange={(v) => updateFonts(field, v)}>
+              <Select value={layout.fonts[field]} onValueChange={(v) => v && updateFonts(field, v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {FONT_OPTIONS.map((font) => (

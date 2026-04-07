@@ -32,7 +32,7 @@ export function StatusPill({ status, onStatusChange, interactive = false }: Stat
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>{pill}</DropdownMenuTrigger>
+      <DropdownMenuTrigger>{pill}</DropdownMenuTrigger>
       <DropdownMenuContent>
         {BRANCH_STATUS_OPTIONS.map((opt) => (
           <DropdownMenuItem key={opt.value} onClick={() => onStatusChange(opt.value)}>
