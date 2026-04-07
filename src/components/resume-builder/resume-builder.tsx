@@ -169,7 +169,7 @@ export function ResumeBuilder() {
 
   return (
     <div className="flex h-screen flex-col bg-gray-50">
-      <div className="flex h-14 items-center justify-between border-b bg-white px-6">
+      <div className="flex h-14 items-center justify-between border-b bg-white px-3 md:px-6">
         {breadcrumb}
         <div className="flex items-center gap-2">
           <Button onClick={save} disabled={!isDirty} variant={isDirty ? "default" : "outline"}>
