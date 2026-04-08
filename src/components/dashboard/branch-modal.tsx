@@ -78,7 +78,9 @@ export function BranchModal({ open, onOpenChange, baseResumeId, baseResumes }: B
             <Label>Parent Resume</Label>
             <Select value={effectiveBaseId as string} onValueChange={(v) => v && setSelectedBaseId(v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a base resume..." />
+                <SelectValue placeholder="Select a base resume...">
+                  {baseResumes.find((r) => r._id === effectiveBaseId)?.title ?? "Select a base resume..."}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {baseResumes.map((r) => (

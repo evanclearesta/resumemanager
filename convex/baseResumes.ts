@@ -37,11 +37,20 @@ export const create = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
 
-    const user = await ctx.db
+    let user = await ctx.db
       .query("users")
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
       .unique();
-    if (!user) throw new Error("User not found");
+    if (!user) {
+      // User record may not exist yet if Clerk webhook hasn't fired — create it now
+      const userId = await ctx.db.insert("users", {
+        clerkId: identity.subject,
+        email: identity.email ?? "",
+        name: identity.name ?? "",
+        imageUrl: (identity as any).imageUrl ?? (identity as any).picture ?? "",
+      });
+      user = (await ctx.db.get(userId))!;
+    }
 
     return await ctx.db.insert("baseResumes", {
       userId: user._id,

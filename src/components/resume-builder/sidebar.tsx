@@ -18,7 +18,7 @@ interface SidebarProps {
 
 export function Sidebar({ content, layoutSettings, category, categoryOptions, onContentChange, onLayoutChange, onCategoryChange, onBlur }: SidebarProps) {
   return (
-    <div className="flex w-[400px] max-w-[calc(100vw-48px)] flex-col overflow-hidden border-r bg-white" onBlur={onBlur}>
+    <div className="flex h-full w-[400px] max-w-[calc(100vw-48px)] flex-col overflow-hidden border-r bg-white" onBlur={onBlur}>
       <Tabs defaultValue="editor" className="flex min-h-0 flex-1 flex-col">
         <TabsList className="mx-4 mt-3 shrink-0">
           <TabsTrigger value="editor">Editor</TabsTrigger>

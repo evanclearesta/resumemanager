@@ -1,5 +1,7 @@
 import {
   Document,
+  Font,
+  Link,
   Page,
   Text,
   View,
@@ -22,6 +24,60 @@ function mmToPt(mm: number) {
   return mm * 2.835;
 }
 
+// Register Google Fonts using TTF URLs (react-pdf requires TTF, not woff2)
+const GOOGLE_FONT_URLS: Record<string, { regular: string; bold: string; italic: string }> = {
+  Inter: {
+    regular: "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf",
+    bold: "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf",
+    italic: "https://fonts.gstatic.com/s/inter/v20/UcCM3FwrK3iLTcvneQg7Ca725JhhKnNqk4j1ebLhAm8SrXTc2dthjQ.ttf",
+  },
+  Roboto: {
+    regular: "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbWmT.ttf",
+    bold: "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammT.ttf",
+    italic: "https://fonts.gstatic.com/s/roboto/v51/KFOKCnqEu92Fr1Mu53ZEC9_Vu3r1gIhOszmOClHrs6ljXfMMLoHQiA8.ttf",
+  },
+  Lato: {
+    regular: "https://fonts.gstatic.com/s/lato/v25/S6uyw4BMUTPHvxk.ttf",
+    bold: "https://fonts.gstatic.com/s/lato/v25/S6u9w4BMUTPHh6UVew8.ttf",
+    italic: "https://fonts.gstatic.com/s/lato/v25/S6u8w4BMUTPHjxswWw.ttf",
+  },
+  "Open Sans": {
+    regular: "https://fonts.gstatic.com/s/opensans/v44/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0C4n.ttf",
+    bold: "https://fonts.gstatic.com/s/opensans/v44/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1y4n.ttf",
+    italic: "https://fonts.gstatic.com/s/opensans/v44/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk8ZkaVc.ttf",
+  },
+  Merriweather: {
+    regular: "https://fonts.gstatic.com/s/merriweather/v33/u-4D0qyriQwlOrhSvowK_l5UcA6zuSYEqOzpPe3HOZJ5eX1WtLaQwmYiScCmDxhtNOKl8yDr3icqEw.ttf",
+    bold: "https://fonts.gstatic.com/s/merriweather/v33/u-4D0qyriQwlOrhSvowK_l5UcA6zuSYEqOzpPe3HOZJ5eX1WtLaQwmYiScCmDxhtNOKl8yDrOSAqEw.ttf",
+    italic: "https://fonts.gstatic.com/s/merriweather/v33/u-4B0qyriQwlOrhSvowK_l5-eTxCVx0ZbwLvKH2Gk9hLmp0v5yA-xXPqCzLvPee1XYk_XSf-FmTCUF3w.ttf",
+  },
+};
+
+for (const [family, urls] of Object.entries(GOOGLE_FONT_URLS)) {
+  Font.register({
+    family,
+    fonts: [
+      { src: urls.regular, fontWeight: "normal", fontStyle: "normal" },
+      { src: urls.bold, fontWeight: "bold", fontStyle: "normal" },
+      { src: urls.italic, fontWeight: "normal", fontStyle: "italic" },
+    ],
+  });
+}
+
+// Map font names to react-pdf compatible families
+function resolveFontFamily(font: string): string {
+  const builtInMap: Record<string, string> = {
+    Helvetica: "Helvetica",
+    Arial: "Helvetica",
+    "Times New Roman": "Times-Roman",
+    Georgia: "Times-Roman",
+    Courier: "Courier",
+  };
+  if (builtInMap[font]) return builtInMap[font];
+  if (GOOGLE_FONT_URLS[font]) return font;
+  return "Helvetica";
+}
+
 export function ResumePDFDocument({ content, layout }: ResumePDFDocumentProps) {
   const pageSize = PAGE_SIZES[layout.page.size];
   const margins = {
@@ -33,6 +89,9 @@ export function ResumePDFDocument({ content, layout }: ResumePDFDocumentProps) {
 
   const baseFontSize = layout.typography.fontSize;
   const lineHeight = layout.typography.lineHeight;
+  const bodyFont = resolveFontFamily(layout.fonts.body);
+  const titleFont = resolveFontFamily(layout.fonts.title);
+  const headingFont = resolveFontFamily(layout.fonts.heading);
 
   const styles = StyleSheet.create({
     page: {
@@ -40,32 +99,35 @@ export function ResumePDFDocument({ content, layout }: ResumePDFDocumentProps) {
       paddingRight: margins.right,
       paddingBottom: margins.bottom,
       paddingLeft: margins.left,
-      fontFamily: "Helvetica",
+      fontFamily: bodyFont,
       fontSize: baseFontSize,
       lineHeight,
     },
     name: {
       fontSize: baseFontSize * 2,
+      fontFamily: titleFont,
       fontWeight: "bold",
       textAlign: "center",
-      marginBottom: 2,
-    },
-    subtitle: {
-      fontSize: baseFontSize + 1,
-      textAlign: "center",
-      color: "#4B5563",
-      marginBottom: 4,
+      marginBottom: 12,
     },
     contactRow: {
       flexDirection: "row",
       justifyContent: "center",
-      gap: 12,
+      flexWrap: "wrap",
       fontSize: baseFontSize - 1,
       color: "#6B7280",
       marginBottom: 16,
     },
+    contactLink: {
+      color: "#6B7280",
+      textDecoration: "none",
+    },
+    separator: {
+      marginHorizontal: 6,
+    },
     sectionTitle: {
       fontSize: baseFontSize + 2,
+      fontFamily: headingFont,
       fontWeight: "bold",
       borderBottomWidth: 1,
       borderBottomColor: "#000000",
@@ -100,26 +162,47 @@ export function ResumePDFDocument({ content, layout }: ResumePDFDocumentProps) {
   });
 
   const fullName = `${content.contact.firstName} ${content.contact.lastName}`.trim();
-  const contactItems = [
-    content.contact.email,
-    content.contact.phone,
-    content.contact.location,
-    content.contact.linkedin,
-  ].filter(Boolean);
+
+  // Build contact items with optional links
+  const contactElements: { text: string; href?: string }[] = [];
+
+  if (content.targetJobTitle) {
+    contactElements.push({ text: content.targetJobTitle });
+  }
+  if (content.contact.email) {
+    contactElements.push({ text: content.contact.email, href: `mailto:${content.contact.email}` });
+  }
+  if (content.contact.phone) {
+    contactElements.push({ text: content.contact.phone });
+  }
+  if (content.contact.location) {
+    contactElements.push({ text: content.contact.location });
+  }
+  if (content.contact.linkedin) {
+    const linkedinUrl = content.contact.linkedin.startsWith("http")
+      ? content.contact.linkedin
+      : `https://${content.contact.linkedin}`;
+    contactElements.push({ text: content.contact.linkedin, href: linkedinUrl });
+  }
 
   return (
     <Document>
       <Page size={[pageSize.width, pageSize.height]} style={styles.page}>
         {fullName && <Text style={styles.name}>{fullName}</Text>}
 
-        {content.targetJobTitle && (
-          <Text style={styles.subtitle}>{content.targetJobTitle}</Text>
-        )}
-
-        {contactItems.length > 0 && (
+        {contactElements.length > 0 && (
           <View style={styles.contactRow}>
-            {contactItems.map((item, i) => (
-              <Text key={i}>{item}{i < contactItems.length - 1 ? "  |  " : ""}</Text>
+            {contactElements.map((item, i) => (
+              <Text key={i}>
+                {item.href ? (
+                  <Link src={item.href} style={styles.contactLink}>{item.text}</Link>
+                ) : (
+                  item.text
+                )}
+                {i < contactElements.length - 1 && (
+                  <Text style={styles.separator}> | </Text>
+                )}
+              </Text>
             ))}
           </View>
         )}

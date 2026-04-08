@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -115,6 +116,17 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+.tiptap.ProseMirror {
+  min-height: 100%;
+  outline: none;
+}
+
+.tiptap.ProseMirror p {
+  line-height: 1.4;
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
 }
 
 @layer base {

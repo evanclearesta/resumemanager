@@ -226,7 +226,7 @@ export function ResumeBuilder() {
             <div className="fixed inset-0 z-40 bg-black/20 lg:hidden" />
             <div
               ref={sidebarOverlayRef}
-              className="fixed inset-y-0 left-12 z-50 lg:hidden"
+              className="fixed inset-y-0 left-12 z-50 flex flex-col lg:hidden"
             >
               <Sidebar
                 content={content}

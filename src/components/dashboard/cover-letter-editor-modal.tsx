@@ -14,7 +14,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, FileText } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 interface CoverLetterEditorModalProps {
@@ -35,8 +35,10 @@ export function CoverLetterEditorModal({
 
   const updateCoverLetter = useMutation(api.coverLetters.update);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [StarterKit, Underline],
     content: "",
     onUpdate: ({ editor }) => {
@@ -51,16 +53,23 @@ export function CoverLetterEditorModal({
     },
   });
 
+  // Only load content once when the cover letter data first arrives
   useEffect(() => {
-    if (coverLetter && editor) {
+    if (coverLetter && editor && !hasLoaded) {
       try {
         const content = JSON.parse(coverLetter.content);
         editor.commands.setContent(content);
       } catch {
         editor.commands.setContent("");
       }
+      setHasLoaded(true);
     }
-  }, [coverLetter, editor]);
+  }, [coverLetter, editor, hasLoaded]);
+
+  // Reset loaded state when switching cover letters or closing
+  useEffect(() => {
+    setHasLoaded(false);
+  }, [coverLetterId]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,8 +101,8 @@ export function CoverLetterEditorModal({
           </div>
         )}
 
-        <div className="min-h-[400px] rounded-md border p-4">
-          <EditorContent editor={editor} className="prose max-w-none" />
+        <div className="min-h-[200px] max-h-[400px] overflow-y-auto rounded-md border p-4 cursor-text flex flex-col" onClick={() => editor?.commands.focus()}>
+          <EditorContent editor={editor} className="prose max-w-none flex-1 [&>.tiptap]:min-h-full" />
         </div>
 
         <DialogFooter>
