@@ -11,6 +11,7 @@ export interface ExperienceEntry {
   id: string;
   company: string;
   title: string;
+  country: string;
   startDate: string;
   endDate: string;
   current: boolean;
@@ -21,6 +22,7 @@ export interface EducationEntry {
   id: string;
   institution: string;
   degree: string;
+  country: string;
   graduationDate: string;
 }
 

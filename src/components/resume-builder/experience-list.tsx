@@ -15,7 +15,7 @@ interface ExperienceListProps {
 
 export function ExperienceList({ experience, onChange }: ExperienceListProps) {
   function addEntry() {
-    onChange([...experience, { id: generateId(), company: "", title: "", startDate: "", endDate: "", current: false, description: "" }]);
+    onChange([...experience, { id: generateId(), company: "", title: "", country: "", startDate: "", endDate: "", current: false, description: "" }]);
   }
 
   function updateEntry(index: number, updates: Partial<ExperienceEntry>) {
@@ -44,9 +44,13 @@ export function ExperienceList({ experience, onChange }: ExperienceListProps) {
               <Input value={entry.company} onChange={(e) => updateEntry(index, { company: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Job Title</Label>
-              <Input value={entry.title} onChange={(e) => updateEntry(index, { title: e.target.value })} />
+              <Label className="text-xs">Country</Label>
+              <Input value={entry.country ?? ""} onChange={(e) => updateEntry(index, { country: e.target.value })} placeholder="e.g. United States" />
             </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Job Title</Label>
+            <Input value={entry.title} onChange={(e) => updateEntry(index, { title: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">

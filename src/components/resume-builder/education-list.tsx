@@ -14,7 +14,7 @@ interface EducationListProps {
 
 export function EducationList({ education, onChange }: EducationListProps) {
   function addEntry() {
-    onChange([...education, { id: generateId(), institution: "", degree: "", graduationDate: "" }]);
+    onChange([...education, { id: generateId(), institution: "", degree: "", country: "", graduationDate: "" }]);
   }
 
   function updateEntry(index: number, updates: Partial<EducationEntry>) {
@@ -37,19 +37,23 @@ export function EducationList({ education, onChange }: EducationListProps) {
               <Trash2 className="h-3 w-3" />
             </Button>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Institution</Label>
-            <Input value={entry.institution} onChange={(e) => updateEntry(index, { institution: e.target.value })} />
-          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Degree</Label>
-              <Input value={entry.degree} onChange={(e) => updateEntry(index, { degree: e.target.value })} placeholder="B.S. Computer Science" />
+              <Label className="text-xs">Institution</Label>
+              <Input value={entry.institution} onChange={(e) => updateEntry(index, { institution: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Graduation Date</Label>
-              <Input type="month" value={entry.graduationDate} onChange={(e) => updateEntry(index, { graduationDate: e.target.value })} />
+              <Label className="text-xs">Country</Label>
+              <Input value={entry.country ?? ""} onChange={(e) => updateEntry(index, { country: e.target.value })} placeholder="e.g. United States" />
             </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Degree</Label>
+            <Input value={entry.degree} onChange={(e) => updateEntry(index, { degree: e.target.value })} placeholder="B.S. Computer Science" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Graduation Date</Label>
+            <Input type="month" value={entry.graduationDate} onChange={(e) => updateEntry(index, { graduationDate: e.target.value })} />
           </div>
         </div>
       ))}
