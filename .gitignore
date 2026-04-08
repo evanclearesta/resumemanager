@@ -6,3 +6,11 @@ convex/_generated
 docs/
 tsconfig.tsbuildinfo
 .env
+.agents/
+.claude/
+.kiro/
+.next/
+AGENTS.md
+CLAUDE.md
+agents.md
+claude.md
