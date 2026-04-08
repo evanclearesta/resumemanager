@@ -107,6 +107,33 @@ export const remove = mutation({
   },
 });
 
+export const duplicate = mutation({
+  args: { sourceId: v.id("baseResumes") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const source = await ctx.db.get(args.sourceId);
+    if (!source) throw new Error("Source resume not found");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    return await ctx.db.insert("baseResumes", {
+      userId: user._id,
+      title: `${source.title} (Copy)`,
+      category: source.category,
+      content: source.content,
+      layoutSettings: source.layoutSettings,
+      status: "draft",
+      lastEditedAt: Date.now(),
+    });
+  },
+});
+
 export const listCategories = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
