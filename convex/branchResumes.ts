@@ -39,6 +39,7 @@ export const get = query({
 export const create = mutation({
   args: {
     baseResumeId: v.id("baseResumes"),
+    sourceBranchId: v.optional(v.id("branchResumes")),
     companyName: v.string(),
     roleName: v.string(),
     jobDescription: v.optional(v.string()),
@@ -57,6 +58,13 @@ export const create = mutation({
     const baseResume = await ctx.db.get(args.baseResumeId);
     if (!baseResume) throw new Error("Base resume not found");
 
+    let contentSource: { content: any; layoutSettings: any } = baseResume;
+    if (args.sourceBranchId) {
+      const sourceBranch = await ctx.db.get(args.sourceBranchId);
+      if (!sourceBranch) throw new Error("Source branch not found");
+      contentSource = sourceBranch;
+    }
+
     return await ctx.db.insert("branchResumes", {
       userId: user._id,
       baseResumeId: args.baseResumeId,
@@ -64,8 +72,8 @@ export const create = mutation({
       roleName: args.roleName,
       jobDescription: args.jobDescription,
       jobUrl: args.jobUrl,
-      content: JSON.parse(JSON.stringify(baseResume.content)),
-      layoutSettings: JSON.parse(JSON.stringify(baseResume.layoutSettings)),
+      content: JSON.parse(JSON.stringify(contentSource.content)),
+      layoutSettings: JSON.parse(JSON.stringify(contentSource.layoutSettings)),
       status: "draft",
       lastEditedAt: Date.now(),
     });

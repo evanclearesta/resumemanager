@@ -39,6 +39,7 @@ export function ResumeTable() {
   const updateBranchStatus = useMutation(api.branchResumes.update);
 
   const [branchModalBaseId, setBranchModalBaseId] = useState<Id<"baseResumes"> | null>(null);
+  const [branchModalSourceBranchId, setBranchModalSourceBranchId] = useState<Id<"branchResumes"> | null>(null);
   const [addContentBranchId, setAddContentBranchId] = useState<Id<"branchResumes"> | null>(null);
   const [editCoverLetterId, setEditCoverLetterId] = useState<Id<"coverLetters"> | null>(null);
   const [deleteAction, setDeleteAction] = useState<{ type: string; id: string; name: string } | null>(null);
@@ -102,7 +103,7 @@ export function ResumeTable() {
                   onDuplicateResume={() => setBranchModalBaseId(resume._id)}
                   onDeleteResume={() => setDeleteAction({ type: "base resume", id: resume._id, name: resume.title })}
                   onEditBranch={(id) => router.push(`/resume/${id}`)}
-                  onDuplicateBranch={() => setBranchModalBaseId(resume._id)}
+                  onDuplicateBranch={(branchId) => { setBranchModalBaseId(resume._id); setBranchModalSourceBranchId(branchId); }}
                   onDeleteBranch={(id) => setDeleteAction({ type: "branch", id, name: "this branch" })}
                   onStatusChange={(id, status) => updateBranchStatus({ id, status })}
                   onAddContent={(id) => setAddContentBranchId(id)}
@@ -159,7 +160,7 @@ export function ResumeTable() {
                       onDuplicateResume={() => setBranchModalBaseId(resume._id)}
                       onDeleteResume={() => setDeleteAction({ type: "base resume", id: resume._id, name: resume.title })}
                       onEditBranch={(id: Id<"branchResumes">) => router.push(`/resume/${id}`)}
-                      onDuplicateBranch={(baseId: Id<"baseResumes">) => setBranchModalBaseId(baseId)}
+                      onDuplicateBranch={(baseId: Id<"baseResumes">, branchId: Id<"branchResumes">) => { setBranchModalBaseId(baseId); setBranchModalSourceBranchId(branchId); }}
                       onDeleteBranch={(id) => setDeleteAction({ type: "branch", id, name: "this branch" })}
                       onStatusChange={(id: Id<"branchResumes">, status: string) => updateBranchStatus({ id, status })}
                       onAddContent={(id: Id<"branchResumes">) => setAddContentBranchId(id)}
@@ -177,8 +178,9 @@ export function ResumeTable() {
 
       <BranchModal
         open={branchModalBaseId !== null}
-        onOpenChange={(open) => !open && setBranchModalBaseId(null)}
+        onOpenChange={(open) => { if (!open) { setBranchModalBaseId(null); setBranchModalSourceBranchId(null); } }}
         baseResumeId={branchModalBaseId}
+        sourceBranchId={branchModalSourceBranchId}
         baseResumes={baseResumes}
       />
 
@@ -248,7 +250,7 @@ function ResumeWithBranches({
   onDuplicateResume: () => void;
   onDeleteResume: () => void;
   onEditBranch: (id: Id<"branchResumes">) => void;
-  onDuplicateBranch: (baseId: Id<"baseResumes">) => void;
+  onDuplicateBranch: (baseId: Id<"baseResumes">, branchId: Id<"branchResumes">) => void;
   onDeleteBranch: (id: Id<"branchResumes">) => void;
   onStatusChange: (id: Id<"branchResumes">, status: string) => void;
   onAddContent: (id: Id<"branchResumes">) => void;
@@ -270,7 +272,7 @@ function ResumeWithBranches({
             <BranchResumeRow
               branch={branch}
               onEdit={() => onEditBranch(branch._id)}
-              onDuplicate={() => onDuplicateBranch(resume._id)}
+              onDuplicate={() => onDuplicateBranch(resume._id, branch._id)}
               onDelete={() => onDeleteBranch(branch._id)}
               onStatusChange={(status: BranchStatus) => onStatusChange(branch._id, status)}
               onAddContent={() => onAddContent(branch._id)}

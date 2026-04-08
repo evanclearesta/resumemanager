@@ -29,10 +29,11 @@ interface BranchModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   baseResumeId: Id<"baseResumes"> | null;
+  sourceBranchId?: Id<"branchResumes"> | null;
   baseResumes: Doc<"baseResumes">[];
 }
 
-export function BranchModal({ open, onOpenChange, baseResumeId, baseResumes }: BranchModalProps) {
+export function BranchModal({ open, onOpenChange, baseResumeId, sourceBranchId, baseResumes }: BranchModalProps) {
   const router = useRouter();
   const createBranch = useMutation(api.branchResumes.create);
 
@@ -49,6 +50,7 @@ export function BranchModal({ open, onOpenChange, baseResumeId, baseResumes }: B
 
     const branchId = await createBranch({
       baseResumeId: effectiveBaseId as Id<"baseResumes">,
+      sourceBranchId: sourceBranchId ?? undefined,
       companyName,
       roleName,
       jobDescription: jobDescription || undefined,

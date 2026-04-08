@@ -14,7 +14,7 @@ interface ResumeCardProps {
   onDuplicateResume: () => void;
   onDeleteResume: () => void;
   onEditBranch: (id: any) => void;
-  onDuplicateBranch: (baseId: any) => void;
+  onDuplicateBranch: (branchId: any) => void;
   onDeleteBranch: (id: any) => void;
   onStatusChange: (id: any, status: string) => void;
   onAddContent: (id: any) => void;
