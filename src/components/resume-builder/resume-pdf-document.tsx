@@ -53,6 +53,9 @@ const GOOGLE_FONT_URLS: Record<string, { regular: string; bold: string; italic: 
   },
 };
 
+// Disable hyphenation so words wrap whole instead of breaking with "-"
+Font.registerHyphenationCallback((word) => [word]);
+
 for (const [family, urls] of Object.entries(GOOGLE_FONT_URLS)) {
   Font.register({
     family,
@@ -152,12 +155,10 @@ export function ResumePDFDocument({ content, layout }: ResumePDFDocumentProps) {
     bullet: { width: 10 },
     bulletText: { flex: 1 },
     skillRow: {
-      flexDirection: "row",
       marginBottom: 2,
     },
     skillCategory: {
       fontWeight: "bold",
-      marginRight: 4,
     },
   });
 
@@ -220,15 +221,18 @@ export function ResumePDFDocument({ content, layout }: ResumePDFDocumentProps) {
             {content.experience.map((exp) => (
               <View key={exp.id} style={{ marginBottom: 8 }}>
                 <View style={styles.entryHeader}>
-                  <Text style={styles.bold}>{exp.title}</Text>
+                  <Text style={styles.bold}>{exp.company}</Text>
+                  {exp.country ? <Text style={styles.gray}>{exp.country}</Text> : null}
+                </View>
+                <View style={styles.entryHeader}>
+                  <Text>{exp.title}</Text>
                   <Text style={styles.gray}>
                     {formatDate(exp.startDate, layout.dateFormat)} —{" "}
                     {exp.current ? "Present" : formatDate(exp.endDate, layout.dateFormat)}
                   </Text>
                 </View>
-                <Text style={styles.italic}>{exp.company}</Text>
                 {exp.description.split("\n").filter(Boolean).map((line, i) => (
-                  <View key={i} style={styles.bulletPoint}>
+                  <View key={i} style={styles.bulletPoint} wrap={false}>
                     <Text style={styles.bullet}>•</Text>
                     <Text style={styles.bulletText}>{line.replace(/^[-•]\s*/, "")}</Text>
                   </View>
@@ -242,10 +246,10 @@ export function ResumePDFDocument({ content, layout }: ResumePDFDocumentProps) {
           <>
             <Text style={styles.sectionTitle}>Skills</Text>
             {content.skills.map((cat, i) => (
-              <View key={i} style={styles.skillRow}>
-                <Text style={styles.skillCategory}>{cat.category}:</Text>
+              <Text key={i} style={styles.skillRow}>
+                <Text style={styles.skillCategory}>{cat.category}:  </Text>
                 <Text>{cat.items.join(", ")}</Text>
-              </View>
+              </Text>
             ))}
           </>
         )}
@@ -256,10 +260,13 @@ export function ResumePDFDocument({ content, layout }: ResumePDFDocumentProps) {
             {content.education.map((edu) => (
               <View key={edu.id} style={{ marginBottom: 4 }}>
                 <View style={styles.entryHeader}>
-                  <Text style={styles.bold}>{edu.degree}</Text>
+                  <Text style={styles.bold}>{edu.institution}</Text>
+                  {edu.country ? <Text style={styles.gray}>{edu.country}</Text> : null}
+                </View>
+                <View style={styles.entryHeader}>
+                  <Text>{edu.degree}</Text>
                   <Text style={styles.gray}>{formatDate(edu.graduationDate, layout.dateFormat)}</Text>
                 </View>
-                <Text style={styles.italic}>{edu.institution}</Text>
               </View>
             ))}
           </>

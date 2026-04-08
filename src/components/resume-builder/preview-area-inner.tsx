@@ -40,7 +40,7 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
       const availableHeight = height - 80;
       const scaleX = availableWidth / 595;
       const scaleY = availableHeight / 842;
-      const newScale = Math.min(scaleX, scaleY, 1); // never exceed 1
+      const newScale = Math.min(scaleX, scaleY, 1.5); // cap at 1.5x to avoid oversized iframes
       setScale(Math.max(newScale, 0.3)); // minimum 30%
     });
 
@@ -122,8 +122,8 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
     <div ref={containerRef} className="relative flex flex-1 items-center justify-center overflow-hidden bg-gray-100">
       {isLoading ? (
         <div
-          className="h-[842px] w-[595px] animate-pulse rounded bg-gray-200"
-          style={{ transform: `scale(${scale})` }}
+          className="animate-pulse rounded bg-gray-200"
+          style={{ width: 595 * scale, height: 842 * scale }}
         />
       ) : (
         <>
@@ -142,30 +142,30 @@ export function PreviewAreaInner({ content, layoutSettings }: PreviewAreaInnerPr
             </div>
           )}
 
-          <div className="relative h-[842px] w-[595px]" style={{ transform: `scale(${scale})` }}>
-        <iframe
-          ref={iframeARef}
-          width="100%"
-          height="100%"
-          className="absolute inset-0 rounded shadow-lg transition-opacity duration-150"
-          style={{
-            border: "none",
-            opacity: activeIframe === "A" ? 1 : 0,
-            zIndex: activeIframe === "A" ? 1 : 0,
-          }}
-        />
-        <iframe
-          ref={iframeBRef}
-          width="100%"
-          height="100%"
-          className="absolute inset-0 rounded shadow-lg transition-opacity duration-150"
-          style={{
-            border: "none",
-            opacity: activeIframe === "B" ? 1 : 0,
-            zIndex: activeIframe === "B" ? 1 : 0,
-          }}
-        />
-      </div>
+          <div className="relative rounded shadow-lg" style={{ width: 595 * scale, height: 842 * scale }}>
+            <iframe
+              ref={iframeARef}
+              width="100%"
+              height="100%"
+              className="absolute inset-0 transition-opacity duration-150"
+              style={{
+                border: "none",
+                opacity: activeIframe === "A" ? 1 : 0,
+                zIndex: activeIframe === "A" ? 1 : 0,
+              }}
+            />
+            <iframe
+              ref={iframeBRef}
+              width="100%"
+              height="100%"
+              className="absolute inset-0 transition-opacity duration-150"
+              style={{
+                border: "none",
+                opacity: activeIframe === "B" ? 1 : 0,
+                zIndex: activeIframe === "B" ? 1 : 0,
+              }}
+            />
+          </div>
         </>
       )}
     </div>
