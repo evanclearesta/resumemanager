@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, FilePlus, Copy } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,11 +23,11 @@ export default function DashboardPage() {
       <TopBar
         rightActions={
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New Base Resume
-              </Button>
+            <DropdownMenuTrigger
+              className={buttonVariants()}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              New Base Resume
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => router.push("/resume/new")}>
